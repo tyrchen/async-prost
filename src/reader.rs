@@ -16,7 +16,7 @@ const LEN_SIZE: usize = 4;
 
 enum FillResult {
     Filled,
-    EOF,
+    Eof,
 }
 
 /// A wrapper around an async reader that produces an asynchronous stream of prost-decoded values
@@ -83,7 +83,7 @@ where
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         // FIXME: what 5 means here?
-        if let FillResult::EOF = ready!(self.as_mut().fill(cx, 5))? {
+        if let FillResult::Eof = ready!(self.as_mut().fill(cx, 5))? {
             return Poll::Ready(None);
         }
 
@@ -135,7 +135,7 @@ where
             let n = buf.filled().len();
             if n == 0 {
                 if self.buffer.is_empty() {
-                    return Poll::Ready(Ok(FillResult::EOF));
+                    return Poll::Ready(Ok(FillResult::Eof));
                 } else {
                     return Poll::Ready(Err(io::Error::from(io::ErrorKind::BrokenPipe)));
                 }
