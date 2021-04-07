@@ -105,8 +105,8 @@ where
     fn append(&mut self, item: T) -> Result<(), io::Error> {
         let size = item.encoded_len() as u32;
         self.buffer.write_u32::<NetworkEndian>(size)?;
-        let result = item.encode(&mut self.buffer)?;
-        Ok(result)
+        item.encode(&mut self.buffer)?;
+        Ok(())
     }
 }
 
@@ -116,8 +116,8 @@ where
     T: Message,
 {
     fn append(&mut self, item: T) -> Result<(), io::Error> {
-        let result = item.encode(&mut self.buffer)?;
-        Ok(result)
+        item.encode(&mut self.buffer)?;
+        Ok(())
     }
 }
 
