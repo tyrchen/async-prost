@@ -14,6 +14,7 @@ pub use crate::writer::{AsyncDestination, AsyncProstWriter, ProstWriterFor, Sync
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use bytes::Bytes;
     use futures::prelude::*;
