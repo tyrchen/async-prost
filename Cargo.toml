@@ -1,6 +1,6 @@
 [package]
 name = "async-prost"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Tyr Chen <tyr.chen@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -19,12 +19,12 @@ keywords = []
 [dependencies]
 bytes = "1"
 byteorder = "1"
+either = "1"
 futures-core = "0.3"
 futures-sink = "0.3"
 prost = "0.7"
 serde = "1"
 tokio = { version = "1", features = ["net"] }
-
 
 [dev-dependencies]
 futures = "0.3"

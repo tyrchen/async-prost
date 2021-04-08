@@ -11,6 +11,8 @@ use futures_core::{ready, Stream};
 use prost::Message;
 use tokio::io::{AsyncRead, ReadBuf};
 
+use crate::{AsyncDestination, AsyncFrameDestination, Framed};
+
 const BUFFER_SIZE: usize = 8192;
 const LEN_SIZE: usize = 4;
 
@@ -21,20 +23,22 @@ enum FillResult {
 
 /// A wrapper around an async reader that produces an asynchronous stream of prost-decoded values
 #[derive(Debug)]
-pub struct AsyncProstReader<R, T> {
+pub struct AsyncProstReader<R, T, D> {
     reader: R,
     pub(crate) buffer: BytesMut,
     into: PhantomData<T>,
+    dest: PhantomData<D>,
 }
-impl<R, T> Unpin for AsyncProstReader<R, T> where R: Unpin {}
+impl<R, T, D> Unpin for AsyncProstReader<R, T, D> where R: Unpin {}
 
-impl<R, T> AsyncProstReader<R, T> {
+impl<R, T, D> AsyncProstReader<R, T, D> {
     /// create a new reader
     pub fn new(reader: R) -> Self {
         Self {
             reader,
             buffer: BytesMut::with_capacity(BUFFER_SIZE),
             into: PhantomData,
+            dest: PhantomData,
         }
     }
 
@@ -59,7 +63,7 @@ impl<R, T> AsyncProstReader<R, T> {
     }
 }
 
-impl<R, T> Default for AsyncProstReader<R, T>
+impl<R, T, D> Default for AsyncProstReader<R, T, D>
 where
     R: Default,
 {
@@ -68,13 +72,13 @@ where
     }
 }
 
-impl<R, T> From<R> for AsyncProstReader<R, T> {
+impl<R, T, D> From<R> for AsyncProstReader<R, T, D> {
     fn from(reader: R) -> Self {
         Self::new(reader)
     }
 }
 
-impl<R, T> Stream for AsyncProstReader<R, T>
+impl<R, T> Stream for AsyncProstReader<R, T, AsyncDestination>
 where
     T: Message + Default,
     R: AsyncRead + Unpin,
@@ -100,9 +104,37 @@ where
     }
 }
 
-impl<R, T> AsyncProstReader<R, T>
+impl<R, T> Stream for AsyncProstReader<R, T, AsyncFrameDestination>
 where
-    T: Message + Default,
+    R: AsyncRead + Unpin,
+    T: Framed + Default,
+{
+    type Item = Result<T, io::Error>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        // FIXME: what 5 means here?
+        if let FillResult::Eof = ready!(self.as_mut().fill(cx, LEN_SIZE + 1))? {
+            return Poll::Ready(None);
+        }
+
+        let size = NetworkEndian::read_u32(&self.buffer[..LEN_SIZE]) as usize;
+        let header_size = size >> 24;
+        let body_size = 0x00ffffff & size;
+        let message_size = header_size + body_size;
+
+        // since self.buffer.len() >= 4, we know that we can't get a clean EOF here
+        ready!(self.as_mut().fill(cx, message_size + LEN_SIZE))?;
+
+        self.buffer.advance(LEN_SIZE);
+        let message = T::decode(&self.buffer[..message_size], header_size)?;
+
+        self.buffer.advance(message_size);
+        Poll::Ready(Some(Ok(message)))
+    }
+}
+
+impl<R, T, D> AsyncProstReader<R, T, D>
+where
     R: AsyncRead + Unpin,
 {
     fn fill(

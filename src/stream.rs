@@ -15,12 +15,14 @@ use tokio::{
     },
 };
 
-use crate::{AsyncDestination, AsyncProstReader, AsyncProstWriter, SyncDestination};
+use crate::{
+    AsyncDestination, AsyncFrameDestination, AsyncProstReader, AsyncProstWriter, SyncDestination,
+};
 
 /// A wrapper around an async stream that receives and sends prost-encoded values
 #[derive(Debug)]
 pub struct AsyncProstStream<S, R, W, D> {
-    stream: AsyncProstReader<InternalAsyncWriter<S, W, D>, R>,
+    stream: AsyncProstReader<InternalAsyncWriter<S, W, D>, R, D>,
 }
 
 #[doc(hidden)]
@@ -97,6 +99,16 @@ impl<S, R, W, D> AsyncProstStream<S, R, W, D> {
         }
     }
 
+    /// make this stream include the serialized data's size before each serialized value
+    pub fn for_async_framed(self) -> AsyncProstStream<S, R, W, AsyncFrameDestination> {
+        let stream = self.into_inner();
+        AsyncProstStream {
+            stream: AsyncProstReader::from(InternalAsyncWriter(
+                AsyncProstWriter::from(stream).for_async_framed(),
+            )),
+        }
+    }
+
     /// Make this stream only send prost-encoded values
     pub fn for_sync(self) -> AsyncProstStream<S, R, W, SyncDestination> {
         AsyncProstStream::from(self.into_inner())
@@ -108,7 +120,7 @@ impl<R, W, D> AsyncProstStream<TcpStream, R, W, D> {
     pub fn tcp_split(
         &mut self,
     ) -> (
-        AsyncProstReader<ReadHalf, R>,
+        AsyncProstReader<ReadHalf, R, D>,
         AsyncProstWriter<WriteHalf, W, D>,
     ) {
         // first, steal the reader state so it isn't lost
@@ -148,7 +160,7 @@ where
 impl<S, R, W, D> Stream for AsyncProstStream<S, R, W, D>
 where
     S: Unpin,
-    AsyncProstReader<InternalAsyncWriter<S, W, D>, R>: Stream<Item = Result<R, io::Error>>,
+    AsyncProstReader<InternalAsyncWriter<S, W, D>, R, D>: Stream<Item = Result<R, io::Error>>,
 {
     type Item = Result<R, io::Error>;
 
