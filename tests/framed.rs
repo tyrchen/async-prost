@@ -76,7 +76,7 @@ impl ResponseFrame {
         if let Either::Right(v) = self.0.body.as_ref().unwrap() {
             assert_eq!(v.data, expected);
         } else {
-            assert!(false, "Should not come here")
+            unreachable!()
         }
     }
 
@@ -88,7 +88,7 @@ impl ResponseFrame {
             body.encode(&mut buf).unwrap();
             assert_eq!(v.as_slice(), buf.as_slice());
         } else {
-            assert!(false, "Should not come here")
+            unreachable!()
         }
     }
 }
