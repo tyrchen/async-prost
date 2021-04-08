@@ -11,6 +11,8 @@ use futures_sink::Sink;
 use prost::Message;
 use tokio::io::AsyncWrite;
 
+use crate::{AsyncDestination, AsyncFrameDestination, Framed, SyncDestination};
+
 /// A warpper around an async sink that accepts, serializes, and sends prost-encoded values.
 #[derive(Debug)]
 pub struct AsyncProstWriter<W, T, D> {
@@ -83,27 +85,31 @@ impl<W, T> AsyncProstWriter<W, T, SyncDestination> {
     pub fn for_async(self) -> AsyncProstWriter<W, T, AsyncDestination> {
         self.make_for()
     }
+
+    /// make this writer include the serialized data's header and body size before serialized value
+    pub fn for_async_framed(self) -> AsyncProstWriter<W, T, AsyncFrameDestination> {
+        self.make_for()
+    }
 }
-
-/// A marker that indicates that the wrapping type is compatible with `AsyncProstReader`.
-#[derive(Debug)]
-pub struct AsyncDestination;
-
-/// A marker that indicates that the wrapping type is compatible with stock `prost` receivers.
-#[derive(Debug)]
-pub struct SyncDestination;
 
 #[doc(hidden)]
 pub trait ProstWriterFor<T> {
     fn append(&mut self, item: T) -> Result<(), io::Error>;
 }
 
-impl<W, T> ProstWriterFor<T> for AsyncProstWriter<W, T, AsyncDestination>
-where
-    T: Message,
-{
+impl<W, F: Framed> ProstWriterFor<F> for AsyncProstWriter<W, F, AsyncFrameDestination> {
+    fn append(&mut self, item: F) -> Result<(), io::Error> {
+        let size = item.encoded_len();
+        self.buffer.write_u32::<NetworkEndian>(size)?;
+        item.encode(&mut self.buffer)?;
+        Ok(())
+    }
+}
+
+impl<W, T: Message> ProstWriterFor<T> for AsyncProstWriter<W, T, AsyncDestination> {
     fn append(&mut self, item: T) -> Result<(), io::Error> {
         let size = item.encoded_len() as u32;
+
         self.buffer.write_u32::<NetworkEndian>(size)?;
         item.encode(&mut self.buffer)?;
         Ok(())
@@ -123,7 +129,6 @@ where
 
 impl<W, T, D> Sink<T> for AsyncProstWriter<W, T, D>
 where
-    T: Message,
     W: AsyncWrite + Unpin,
     Self: ProstWriterFor<T>,
 {

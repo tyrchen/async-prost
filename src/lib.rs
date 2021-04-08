@@ -4,13 +4,27 @@
 
 #![deny(missing_docs)]
 
+mod frame;
 mod reader;
 mod stream;
 mod writer;
 
+pub use crate::frame::{Frame, Framed, ShallDecodeBody};
 pub use crate::reader::AsyncProstReader;
 pub use crate::stream::AsyncProstStream;
-pub use crate::writer::{AsyncDestination, AsyncProstWriter, ProstWriterFor, SyncDestination};
+pub use crate::writer::{AsyncProstWriter, ProstWriterFor};
+
+/// A marker that indicates that the wrapping type is compatible with `AsyncProstReader` with Prost support.
+#[derive(Debug)]
+pub struct AsyncDestination;
+
+/// a marker that indicates that the wrapper type is compatible with `AsyncProstReader` with Framed support.
+#[derive(Debug)]
+pub struct AsyncFrameDestination;
+
+/// A marker that indicates that the wrapping type is compatible with stock `prost` receivers.
+#[derive(Debug)]
+pub struct SyncDestination;
 
 #[cfg(test)]
 mod tests {
