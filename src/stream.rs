@@ -69,7 +69,7 @@ impl<S, R, W, D> AsyncProstStream<S, R, W, D> {
     ///
     /// It is inadvisable to directly read from or write to the underlying stream.
     pub fn get_ref(&self) -> &S {
-        &self.stream.get_ref().0.get_ref()
+        self.stream.get_ref().0.get_ref()
     }
 
     /// Gets a mutable reference to the underlying stream.
