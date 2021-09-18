@@ -1,6 +1,6 @@
 [package]
 name = "async-prost"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Tyr Chen <tyr.chen@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -22,7 +22,7 @@ byteorder = "1"
 either = "1"
 futures-core = "0.3"
 futures-sink = "0.3"
-prost = "0.7"
+prost = "0.8"
 serde = "1"
 tokio = { version = "1", features = ["net"] }
 
@@ -30,6 +30,6 @@ tokio = { version = "1", features = ["net"] }
 futures = "0.3"
 futures-util = "0.3"
 tokio = { version = "1", features = ["full"] }
-tokio-tower = "0.5"
+tokio-tower = "0.6"
 slab = "0.4"
 tower = { version = "0.4", features = ["full"] }
