@@ -24,12 +24,12 @@ futures-core = "0.3.21"
 futures-sink = "0.3.21"
 prost = "0.10.4"
 serde = "1.0.137"
-tokio = { version = "1.18.2", features = ["net"] }
+tokio = { version = "1.18.4", features = ["net"] }
 
 [dev-dependencies]
 futures = "0.3.21"
 futures-util = "0.3.21"
-tokio = { version = "1.18.2", features = ["full"] }
+tokio = { version = "1.18.4", features = ["full"] }
 tokio-tower = "0.6.0"
 slab = "0.4.6"
 tower = { version = "0.4.12", features = ["full"] }
