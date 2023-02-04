@@ -16,7 +16,7 @@ checksum = "ee10e43ae4a853c0a3591d4e2ada1719e553be18199d9da9d4a83f5927c2f5c7"
 
 [[package]]
 name = "async-prost"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -416,12 +416,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "once_cell"
-version = "1.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
-
-[[package]]
 name = "parking_lot"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -628,16 +622,15 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.18.2"
+version = "1.18.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4903bf0427cf68dddd5aa6a93220756f8be0c34fcfa9f5e6191e103e15a31395"
+checksum = "0e050c618355082ae5a89ec63bbf897225d5ffe84c7c4e036874e4d185a5044e"
 dependencies = [
  "bytes",
  "libc",
  "memchr",
  "mio",
  "num_cpus",
- "once_cell",
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
