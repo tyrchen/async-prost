@@ -17,19 +17,19 @@ keywords = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bytes = "1.1.0"
-byteorder = "1.4.3"
-either = "1.6.1"
-futures-core = "0.3.21"
-futures-sink = "0.3.21"
-prost = "0.10.4"
-serde = "1.0.137"
-tokio = { version = "1.18.2", features = ["net"] }
+bytes = "1"
+byteorder = "1"
+either = "1"
+futures-core = "0.3"
+futures-sink = "0.3"
+prost = "0.12"
+serde = "1"
+tokio = { version = "1", features = ["net"] }
 
 [dev-dependencies]
-futures = "0.3.21"
-futures-util = "0.3.21"
-tokio = { version = "1.18.2", features = ["full"] }
-tokio-tower = "0.6.0"
-slab = "0.4.6"
-tower = { version = "0.4.12", features = ["full"] }
+futures = "0.3"
+futures-util = "0.3"
+tokio = { version = "1", features = ["full"] }
+tokio-tower = "0.6"
+slab = "0.4"
+tower = { version = "0.4", features = ["full"] }
